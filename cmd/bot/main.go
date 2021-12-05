@@ -13,6 +13,7 @@ func main() {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
+	// Put your bot token by "botToken" key into file ".env"
 	botToken := os.Getenv("botToken")
 
 	bot, err := tgbotapi.NewBotAPI(botToken)
