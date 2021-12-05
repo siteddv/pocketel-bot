@@ -2,16 +2,19 @@ package telegram
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/siteddv/golang-pocket-sdk"
 	"log"
 )
 
 type Bot struct {
-	bot *tgbotapi.BotAPI
+	bot          *tgbotapi.BotAPI
+	pocketClient *pocket.Client
 }
 
-func NewBot(bot *tgbotapi.BotAPI) *Bot {
+func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client) *Bot {
 	return &Bot{
-		bot: bot,
+		bot:          bot,
+		pocketClient: pocketClient,
 	}
 }
 
