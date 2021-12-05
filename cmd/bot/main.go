@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/boltdb/bolt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
 	"github.com/siteddv/golang-pocket-sdk"
@@ -30,8 +31,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("error handled during creating pocket client: %s", err.Error())
 	}
-	telegramBot := telegram.NewBot(bot, client, "google.com")
 
+	_, err = bolt.Open("bot.db", 0600, nil)
+	if err != nil {
+		log.Fatalf("error handled during initializing db: %s", err.Error())
+	}
+
+	telegramBot := telegram.NewBot(bot, client, "google.com")
 	if err = telegramBot.Start(); err != nil {
 		log.Fatalf("Error during starting bot")
 	}
