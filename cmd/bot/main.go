@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("error handled during creating pocket client: %s", err.Error())
 	}
-	telegramBot := telegram.NewBot(bot, client)
+	telegramBot := telegram.NewBot(bot, client, "google.com")
 
 	if err = telegramBot.Start(); err != nil {
 		log.Fatalf("Error during starting bot")

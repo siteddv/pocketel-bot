@@ -9,12 +9,14 @@ import (
 type Bot struct {
 	bot          *tgbotapi.BotAPI
 	pocketClient *pocket.Client
+	redirectUrl  string
 }
 
-func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client) *Bot {
+func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client, redirectUrl string) *Bot {
 	return &Bot{
 		bot:          bot,
 		pocketClient: pocketClient,
+		redirectUrl:  redirectUrl,
 	}
 }
 
