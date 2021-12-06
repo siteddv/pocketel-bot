@@ -1,6 +1,7 @@
-package bolt
+package boltdb
 
 import (
+	"errors"
 	"github.com/boltdb/bolt"
 	"github.com/siteddv/pocketel_bot/pkg/repository"
 	"strconv"
@@ -21,6 +22,28 @@ func (r *TokenRepository) Save(chatID int64, token string, bucket repository.Buc
 			return b.Put(intToBytes(chatID), []byte(token))
 		},
 	)
+}
+func (r *TokenRepository) Get(chatID int64, bucket repository.Bucket) (string, error) {
+	var token string
+
+	err := r.db.View(
+		func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte(bucket))
+			data := b.Get(intToBytes(chatID))
+			token = string(data)
+			return nil
+		},
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	if token == "" {
+		return "", errors.New("token not found")
+	}
+
+	return token, nil
 }
 
 func intToBytes(v int64) []byte {

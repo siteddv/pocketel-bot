@@ -5,6 +5,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
 	"github.com/siteddv/golang-pocket-sdk"
+	"github.com/siteddv/pocketel_bot/pkg/repository"
+	"github.com/siteddv/pocketel_bot/pkg/repository/boltdb"
 	"github.com/siteddv/pocketel_bot/pkg/telegram"
 	"log"
 	"os"
@@ -32,13 +34,40 @@ func main() {
 		log.Fatalf("error handled during creating pocket client: %s", err.Error())
 	}
 
-	_, err = bolt.Open("bot.db", 0600, nil)
+	db, err := initDB()
 	if err != nil {
-		log.Fatalf("error handled during initializing db: %s", err.Error())
+		log.Fatalf("error handled during initing database: %s", err.Error())
 	}
 
-	telegramBot := telegram.NewBot(bot, client, "google.com")
+	tokenRepos := boltdb.NewTokenRepository(db)
+
+	telegramBot := telegram.NewBot(bot, client, tokenRepos, "google.com")
 	if err = telegramBot.Start(); err != nil {
-		log.Fatalf("Error during starting bot")
+		log.Fatalf("Error during starting bot: %s", err.Error())
 	}
+}
+
+func initDB() (*bolt.DB, error) {
+	db, err := bolt.Open("bot.db", 0600, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Update(
+		func(tx *bolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists([]byte(repository.AccessTokens))
+			if err != nil {
+				return err
+			}
+
+			_, err = tx.CreateBucketIfNotExists([]byte(repository.RequestTokens))
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	)
+
+	return db, err
 }
