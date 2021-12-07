@@ -13,7 +13,11 @@ import (
 	"os"
 )
 
-const botLink = "https://t.me/pocketel_bot"
+const (
+	keyBotToken    = "BOT_TOKEN"
+	keyConsumerKey = "CONSUMER_KEY"
+	redirectUrl    = "REDIRECT_URL"
+)
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -21,7 +25,7 @@ func main() {
 	}
 
 	// Put your bot token by "botToken" key into file ".env"
-	botToken := os.Getenv("botToken")
+	botToken := os.Getenv(keyBotToken)
 
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
@@ -31,7 +35,7 @@ func main() {
 	bot.Debug = true
 
 	// Put your consumer key by "consumerKey" key into file ".env"
-	consumerKey := os.Getenv("consumerKey")
+	consumerKey := os.Getenv(keyConsumerKey)
 	pocketClient, err := pocket.NewClient(consumerKey)
 	if err != nil {
 		log.Fatalf("error handled during creating pocket client: %s", err.Error())
@@ -44,7 +48,7 @@ func main() {
 
 	tokenRepos := boltdb.NewTokenRepository(db)
 
-	telegramBot := telegram.NewBot(bot, pocketClient, tokenRepos, "http://localhost")
+	telegramBot := telegram.NewBot(bot, pocketClient, tokenRepos, redirectUrl)
 
 	authServer := server.NewAuthorizationServer(pocketClient, tokenRepos, botLink)
 
@@ -60,7 +64,7 @@ func main() {
 }
 
 func initDB() (*bolt.DB, error) {
-	db, err := bolt.Open("bot.db", 0600, nil)
+	db, err := bolt.Open(dbPath, 0600, nil)
 	if err != nil {
 		return nil, err
 	}

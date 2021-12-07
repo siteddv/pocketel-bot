@@ -10,13 +10,6 @@ import (
 
 const (
 	startCommand = "start"
-
-	replyStartTemplate     = "Hello. To save links in your Pocket account you need to provide access me to it. Please follow this link:\n%s"
-	replyAlreadyAuthorized = "You've already authorized. Please send me a link and I'll save it to Pocket"
-	replySuccessfulSave    = "The link successfully saved"
-	replyInvalidLink       = "This is an invalid link"
-	replyUnauthorized      = "You aren't authorized. Please use the command /start"
-	replyInternalError     = "I couldn't save link. Please try again"
 )
 
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
@@ -26,11 +19,15 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 		}
 
 		if update.Message.IsCommand() {
-			b.handleCommand(update.Message)
+			if err := b.handleCommand(update.Message); err != nil {
+				b.handleError(update.Message.Chat.ID, err)
+			}
 			continue
 		}
 
-		b.handleMessage(update.Message)
+		if err := b.handleMessage(update.Message); err != nil {
+			b.handleError(update.Message.Chat.ID, err)
+		}
 	}
 }
 
@@ -56,7 +53,7 @@ func (b *Bot) handleStartCommand(inMsg *tgbotapi.Message) error {
 }
 
 func (b *Bot) handleUnknownCommand(inMsg *tgbotapi.Message) error {
-	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, "You've typed the command that I don't know")
+	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID)
 
 	_, err := b.bot.Send(outMsg)
 	return err
@@ -68,26 +65,22 @@ func (b *Bot) handleMessage(inMsg *tgbotapi.Message) error {
 	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, inMsg.Text)
 
 	if _, err := url.ParseRequestURI(inMsg.Text); err != nil {
-		outMsg.Text = replyInvalidLink
-		_, err = b.bot.Send(outMsg)
-		return err
+		return errInvalidUrl
 	}
 
 	accesstoken, err := b.getAccessToken(inMsg.Chat.ID)
 	if err != nil {
-		outMsg.Text = replyUnauthorized
-		_, err = b.bot.Send(outMsg)
-		return err
+		return errUnauthorized
 	}
 	addInput := pocket.AddInput{
 		AccessToken: accesstoken,
 		URL:         inMsg.Text,
 	}
 	if err = b.pocketClient.Add(context.Background(), addInput); err != nil {
-		outMsg.Text = replyInternalError
-		_, err = b.bot.Send(outMsg)
+		return errUnableToSave
 	}
 
+	outMsg.Text = replySuccessfulSave
 	_, err = b.bot.Send(outMsg)
 
 	return err

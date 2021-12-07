@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+const locationHeaderName = "location"
+
 type AuthorizationServer struct {
 	server          *http.Server
 	pocketClient    *pocket.Client
@@ -68,8 +70,11 @@ func (s *AuthorizationServer) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	log.Printf("chat_id: %d\nrequest_token: %s\naccess_token: %s", chatID, requestToken, authResp.AccessToken)
+	log.Printf("chat_id: %d\n"+
+		"request_token: %s\n"+
+		"access_token: %s",
+		chatID, requestToken, authResp.AccessToken)
 
-	w.Header().Add("location", s.redirectURL)
+	w.Header().Add(locationHeaderName, s.redirectURL)
 	w.WriteHeader(http.StatusMovedPermanently)
 }

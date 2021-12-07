@@ -1,0 +1,16 @@
+botLink: "https://t.me/pocketel_bot"
+dbPath: "bot.db"
+
+messages:
+  responses:
+    start: "Hello. To save links in your Pocket account you need to provide access me to it. Please follow this link:\n%s"
+    already_authorized: "You've already authorized. Please send me a link and I'll save it to Pocket"
+    saved_successfully: "The link successfully saved"
+    unknown_command: "You've typed the command that I don't know"
+  errors:
+    invalid_link: "This is an invalid link"
+    unauthorized: "You aren't authorized. Please use the command /start"
+    unable_to_save: "I couldn't save link. Please try again"
+    unknown_error: "It happened unknown error"
+
+
