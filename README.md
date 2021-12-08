@@ -4,7 +4,7 @@
 
 To work with the Pocket API, a self-written SDK is used - <a href="https://github.com/siteddv/golang-pocket-sdk ">golang-pocket-sdk</a>.
 
-<a href=" is used as storagehttps://github.com/bolt/bolt ">Bolt DB</a>.
+<a href="https://github.com/bolt/bolt">Bolt DB</a> is used as storage.
 
 To implement user authorization, an HTTP server is launched together with the bot on port 80, to which a redirect from Pocket occurs when the user is successfully authorized.
 
