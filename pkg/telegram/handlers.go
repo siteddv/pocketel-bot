@@ -4,7 +4,6 @@ import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	pocket "github.com/siteddv/golang-pocket-sdk"
-	"github.com/siteddv/pocketel_bot/pkg/config"
 	"log"
 	"net/url"
 )
@@ -13,54 +12,54 @@ const (
 	startCommand = "start"
 )
 
-func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel, cfg *config.Config) {
+func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
 
 		if update.Message.IsCommand() {
-			if err := b.handleCommand(update.Message, cfg); err != nil {
-				b.handleError(update.Message.Chat.ID, err, cfg)
+			if err := b.handleCommand(update.Message); err != nil {
+				b.handleError(update.Message.Chat.ID, err)
 			}
 			continue
 		}
 
-		if err := b.handleMessage(update.Message, cfg); err != nil {
-			b.handleError(update.Message.Chat.ID, err, nil)
+		if err := b.handleMessage(update.Message); err != nil {
+			b.handleError(update.Message.Chat.ID, err)
 		}
 	}
 }
 
-func (b *Bot) handleCommand(inMsg *tgbotapi.Message, cfg *config.Config) error {
+func (b *Bot) handleCommand(inMsg *tgbotapi.Message) error {
 	switch inMsg.Command() {
 	case startCommand:
-		return b.handleStartCommand(inMsg, cfg)
+		return b.handleStartCommand(inMsg)
 	default:
-		return b.handleUnknownCommand(inMsg, cfg)
+		return b.handleUnknownCommand(inMsg)
 	}
 }
 
-func (b *Bot) handleStartCommand(inMsg *tgbotapi.Message, cfg *config.Config) error {
+func (b *Bot) handleStartCommand(inMsg *tgbotapi.Message) error {
 	_, err := b.getAccessToken(inMsg.Chat.ID)
 	if err != nil {
-		return b.initAuthorizationProcess(inMsg, cfg)
+		return b.initAuthorizationProcess(inMsg)
 	}
 
-	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, cfg.Messages.Responses.AlreadyAuthorized)
+	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, b.messages.Responses.AlreadyAuthorized)
 	_, err = b.bot.Send(outMsg)
 
 	return err
 }
 
-func (b *Bot) handleUnknownCommand(inMsg *tgbotapi.Message, cfg *config.Config) error {
-	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, cfg.Messages.Responses.UnknownCommand)
+func (b *Bot) handleUnknownCommand(inMsg *tgbotapi.Message) error {
+	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, b.messages.Responses.UnknownCommand)
 
 	_, err := b.bot.Send(outMsg)
 	return err
 }
 
-func (b *Bot) handleMessage(inMsg *tgbotapi.Message, cfg *config.Config) error {
+func (b *Bot) handleMessage(inMsg *tgbotapi.Message) error {
 	log.Printf("[%s] %s", inMsg.From.UserName, inMsg.Text)
 
 	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, inMsg.Text)
@@ -81,7 +80,7 @@ func (b *Bot) handleMessage(inMsg *tgbotapi.Message, cfg *config.Config) error {
 		return errUnableToSave
 	}
 
-	outMsg.Text = cfg.Messages.Responses.SavedSuccessfully
+	outMsg.Text = b.messages.Responses.SavedSuccessfully
 	_, err = b.bot.Send(outMsg)
 
 	return err

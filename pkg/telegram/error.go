@@ -3,7 +3,7 @@ package telegram
 import (
 	"errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/siteddv/pocketel_bot/pkg/config"
+	"log"
 )
 
 var (
@@ -12,17 +12,20 @@ var (
 	errUnableToSave = errors.New("unable to save link")
 )
 
-func (b *Bot) handleError(chatID int64, err error, cfg *config.Config) {
-	msg := tgbotapi.NewMessage(chatID, cfg.Messages.Errors.Default)
+func (b *Bot) handleError(chatID int64, err error) {
+	msg := tgbotapi.NewMessage(chatID, b.messages.Errors.Default)
 
 	switch err {
 	case errInvalidUrl:
-		msg.Text = cfg.Messages.Errors.InvalidLink
+		msg.Text = b.messages.Errors.InvalidLink
 	case errUnauthorized:
-		msg.Text = cfg.Messages.Errors.Unauthorized
+		msg.Text = b.messages.Errors.Unauthorized
 	case errUnableToSave:
-		msg.Text = cfg.Messages.Errors.UnableToSave
+		msg.Text = b.messages.Errors.UnableToSave
 	}
 
-	b.bot.Send(msg)
+	_, err = b.bot.Send(msg)
+	if err != nil {
+		log.Printf("Unable to send message due to error: %s", err.Error())
+	}
 }

@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/siteddv/pocketel_bot/pkg/config"
 	"github.com/siteddv/pocketel_bot/pkg/repository"
 )
 
-func (b *Bot) initAuthorizationProcess(inMsg *tgbotapi.Message, cfg *config.Config) error {
+func (b *Bot) initAuthorizationProcess(inMsg *tgbotapi.Message) error {
 	authLink, err := b.generateAuthorizationLink(inMsg.Chat.ID)
 	if err != nil {
 		return err
 	}
 
-	msgText := fmt.Sprintf(cfg.Messages.Responses.Start, authLink)
+	msgText := fmt.Sprintf(b.messages.Responses.Start, authLink)
 
 	outMsg := tgbotapi.NewMessage(inMsg.Chat.ID, msgText)
 

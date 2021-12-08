@@ -13,18 +13,20 @@ type Bot struct {
 	pocketClient    *pocket.Client
 	tokenRepository repository.TokenRepository
 	redirectUrl     string
+	messages        config.Messages
 }
 
-func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client, tokenRepos repository.TokenRepository, redirectUrl string) *Bot {
+func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client, tokenRepos repository.TokenRepository, redirectUrl string, messages config.Messages) *Bot {
 	return &Bot{
 		bot:             bot,
 		pocketClient:    pocketClient,
 		tokenRepository: tokenRepos,
 		redirectUrl:     redirectUrl,
+		messages:        messages,
 	}
 }
 
-func (b *Bot) Start(cfg *config.Config) error {
+func (b *Bot) Start() error {
 	log.Printf("Authorized on account %s", b.bot.Self.UserName)
 
 	updates, err := b.initUpdatesChannel()
@@ -32,7 +34,7 @@ func (b *Bot) Start(cfg *config.Config) error {
 		return err
 	}
 
-	b.handleUpdates(updates, cfg)
+	b.handleUpdates(updates)
 
 	return nil
 }

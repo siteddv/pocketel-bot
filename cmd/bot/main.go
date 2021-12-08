@@ -11,7 +11,6 @@ import (
 	"github.com/siteddv/pocketel_bot/pkg/server"
 	"github.com/siteddv/pocketel_bot/pkg/telegram"
 	"log"
-	"os"
 )
 
 func main() {
@@ -31,26 +30,24 @@ func main() {
 
 	bot.Debug = true
 
-	// Put your consumer key by "consumerKey" key into file ".env"
-	consumerKey := os.Getenv(cfg.ConsumerKey)
-	pocketClient, err := pocket.NewClient(consumerKey)
+	pocketClient, err := pocket.NewClient(cfg.ConsumerKey)
 	if err != nil {
 		log.Fatalf("error handled during creating pocket client: %s", err.Error())
 	}
 
-	db, err := initDB(cfg)
+	db, err := initDB(cfg.DbPath)
 	if err != nil {
 		log.Fatalf("error handled during initing database: %s", err.Error())
 	}
 
 	tokenRepos := boltdb.NewTokenRepository(db)
 
-	telegramBot := telegram.NewBot(bot, pocketClient, tokenRepos, cfg.AuthServerUrl)
+	telegramBot := telegram.NewBot(bot, pocketClient, tokenRepos, cfg.AuthServerUrl, cfg.Messages)
 
 	authServer := server.NewAuthorizationServer(pocketClient, tokenRepos, cfg.BotUrl)
 
 	go func() {
-		if err = telegramBot.Start(cfg); err != nil {
+		if err = telegramBot.Start(); err != nil {
 			log.Fatalf("error handled during starting bot: %s", err.Error())
 		}
 	}()
@@ -60,8 +57,8 @@ func main() {
 	}
 }
 
-func initDB(cfg *config.Config) (*bolt.DB, error) {
-	db, err := bolt.Open(cfg.DbPath, 0600, nil)
+func initDB(dbPath string) (*bolt.DB, error) {
+	db, err := bolt.Open(dbPath, 0600, nil)
 	if err != nil {
 		return nil, err
 	}
