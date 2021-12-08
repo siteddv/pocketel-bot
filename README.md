@@ -20,3 +20,6 @@ When the server accepts the request, it generates an Access Token via the Pocket
 ```
 make run
 ```
+
+### Have a nice experience with repository! 
+#### If you have any questions and suggestions, please contact me via email siteddv@gmail.com
