@@ -14,3 +14,9 @@ When the server accepts the request, it generates an Access Token via the Pocket
 - Go 1.15
 - BoltDB
 - Docker (for deployment)
+
+### To launch the application:
+
+```
+make run
+```
