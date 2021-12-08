@@ -5,6 +5,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
 	pocket "github.com/siteddv/golang-pocket-sdk"
+	"github.com/siteddv/pocketel_bot/pkg/config"
 	"github.com/siteddv/pocketel_bot/pkg/repository"
 	"github.com/siteddv/pocketel_bot/pkg/repository/boltdb"
 	"github.com/siteddv/pocketel_bot/pkg/server"
@@ -13,21 +14,17 @@ import (
 	"os"
 )
 
-const (
-	keyBotToken    = "BOT_TOKEN"
-	keyConsumerKey = "CONSUMER_KEY"
-	redirectUrl    = "REDIRECT_URL"
-)
-
 func main() {
+	cfg, err := config.Init()
+	if err != nil {
+		return
+	}
+
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error handled during loading env variables: %s", err.Error())
 	}
 
-	// Put your bot token by "botToken" key into file ".env"
-	botToken := os.Getenv(keyBotToken)
-
-	bot, err := tgbotapi.NewBotAPI(botToken)
+	bot, err := tgbotapi.NewBotAPI(cfg.BotToken)
 	if err != nil {
 		log.Fatalf("error handled during creating telegram bot client: %s", err.Error())
 	}
@@ -35,25 +32,25 @@ func main() {
 	bot.Debug = true
 
 	// Put your consumer key by "consumerKey" key into file ".env"
-	consumerKey := os.Getenv(keyConsumerKey)
+	consumerKey := os.Getenv(cfg.ConsumerKey)
 	pocketClient, err := pocket.NewClient(consumerKey)
 	if err != nil {
 		log.Fatalf("error handled during creating pocket client: %s", err.Error())
 	}
 
-	db, err := initDB()
+	db, err := initDB(cfg)
 	if err != nil {
 		log.Fatalf("error handled during initing database: %s", err.Error())
 	}
 
 	tokenRepos := boltdb.NewTokenRepository(db)
 
-	telegramBot := telegram.NewBot(bot, pocketClient, tokenRepos, redirectUrl)
+	telegramBot := telegram.NewBot(bot, pocketClient, tokenRepos, cfg.AuthServerUrl)
 
-	authServer := server.NewAuthorizationServer(pocketClient, tokenRepos, botLink)
+	authServer := server.NewAuthorizationServer(pocketClient, tokenRepos, cfg.BotUrl)
 
 	go func() {
-		if err = telegramBot.Start(); err != nil {
+		if err = telegramBot.Start(cfg); err != nil {
 			log.Fatalf("error handled during starting bot: %s", err.Error())
 		}
 	}()
@@ -63,8 +60,8 @@ func main() {
 	}
 }
 
-func initDB() (*bolt.DB, error) {
-	db, err := bolt.Open(dbPath, 0600, nil)
+func initDB(cfg *config.Config) (*bolt.DB, error) {
+	db, err := bolt.Open(cfg.DbPath, 0600, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,5 @@
-botLink: "https://t.me/pocketel_bot"
-dbPath: "bot.db"
+bot_url: "https://t.me/pocketel_bot"
+db_path: "bot.db"
 
 messages:
   responses:
@@ -11,6 +11,6 @@ messages:
     invalid_link: "This is an invalid link"
     unauthorized: "You aren't authorized. Please use the command /start"
     unable_to_save: "I couldn't save link. Please try again"
-    unknown_error: "It happened unknown error"
+    default: "It happened unknown error"
 
 
