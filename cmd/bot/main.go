@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/boltdb/bolt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/joho/godotenv"
 	pocket "github.com/siteddv/golang-pocket-sdk"
 	"github.com/siteddv/pocketel_bot/pkg/config"
 	"github.com/siteddv/pocketel_bot/pkg/repository"
@@ -17,10 +16,6 @@ func main() {
 	cfg, err := config.Init()
 	if err != nil {
 		return
-	}
-
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error handled during loading env variables: %s", err.Error())
 	}
 
 	bot, err := tgbotapi.NewBotAPI(cfg.BotToken)
